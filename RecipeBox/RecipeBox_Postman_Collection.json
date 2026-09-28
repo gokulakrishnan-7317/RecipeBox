@@ -1,0 +1,16 @@
+{
+  "info": {
+    "name": "RecipeBox API",
+    "_postman_id": "recipebox-academic-demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [{"key":"baseUrl","value":"http://localhost:8080"}],
+  "item": [
+    {"name":"List Recipes","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/recipes","host":["{{baseUrl}}"],"path":["api","recipes"]}}},
+    {"name":"Search Recipes","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/recipes?q=chicken","host":["{{baseUrl}}"],"path":["api","recipes"],"query":[{"key":"q","value":"chicken"}]}}},
+    {"name":"Create Recipe","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"title\": \"Paneer Fried Rice\",\n  \"cuisine\": \"Indian-Chinese\",\n  \"description\": \"Quick paneer rice\",\n  \"instructions\": \"Cook rice, vegetables and paneer together.\",\n  \"prepTime\": 25,\n  \"servings\": 2,\n  \"favorite\": false,\n  \"userId\": 1,\n  \"ingredients\": [\n    {\"name\":\"Rice\",\"quantity\":2,\"unit\":\"cups\"},\n    {\"name\":\"Paneer\",\"quantity\":150,\"unit\":\"g\"}\n  ]\n}"},"url":{"raw":"{{baseUrl}}/api/recipes","host":["{{baseUrl}}"],"path":["api","recipes"]}}},
+    {"name":"List Favorites","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/favorites","host":["{{baseUrl}}"],"path":["api","favorites"]}}},
+    {"name":"List Meal Plans","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/meal-plans","host":["{{baseUrl}}"],"path":["api","meal-plans"]}}},
+    {"name":"List Users","request":{"method":"GET","url":{"raw":"{{baseUrl}}/api/users","host":["{{baseUrl}}"],"path":["api","users"]}}}
+  ]
+}

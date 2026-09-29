@@ -1,5 +1,89 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RecipeBox - Dashboard</title><link rel="stylesheet" th:href="@{/css/style.css}"></head><body>
-<header class="topbar"><div class="brand">RECIPEBOX<small>PERSONAL RECIPE & MEAL PLANNER</small></div><nav class="nav"><a class="active" href="/dashboard">Dashboard</a><a href="/recipes">Recipes</a><a href="/meals">Meal Planner</a><a href="/shopping">Shopping List</a><a href="/users">Users</a></nav></header>
-<main class="container"><section class="hero"><div><p class="eyebrow">RECIPE MANAGEMENT SYSTEM</p><h1>Plan meals. Save recipes. Shop smarter.</h1><p>One connected workspace for your personal recipe collection and weekly meal planning.</p></div><a class="btn primary" href="/recipes/new">+ Add Recipe</a></section>
-<section class="cards"><div class="card stat"><span>Total Recipes</span><strong th:text="${recipeCount}">0</strong><a href="/recipes">View collection →</a></div><div class="card stat"><span>Favorite Recipes</span><strong th:text="${favoriteCount}">0</strong><a href="/recipes">View recipes →</a></div><div class="card stat"><span>Planned Meals</span><strong th:text="${mealCount}">0</strong><a href="/meals">Open planner →</a></div><div class="card stat"><span>Registered Users</span><strong th:text="${userCount}">0</strong><a href="/users">Manage users →</a></div></section>
-<section class="two-col"><div class="card"><h3>This Week</h3><div th:if="${#lists.isEmpty(upcomingMeals)}" class="empty">No meals planned yet.<br><a href="/meals">Plan your first meal →</a></div><div th:unless="${#lists.isEmpty(upcomingMeals)}" class="table-wrap"><table><thead><tr><th>Date</th><th>Meal</th><th>Recipe</th></tr></thead><tbody><tr th:each="m:${upcomingMeals}"><td th:text="${m.mealDate}">2026-09-28</td><td><span class="tag" th:text="${m.mealType}">Lunch</span></td><td th:text="${m.recipe.title}">Recipe</td></tr></tbody></table></div></div><div class="card"><h3>Quick Actions</h3><div class="quick"><a href="/recipes/new">Create a recipe with ingredients</a><a href="/recipes">Search by ingredient or cuisine</a><a href="/meals">Build weekly meal calendar</a><a href="/shopping">Generate consolidated shopping list</a></div></div></section><div class="footer">RecipeBox • Spring Boot + Spring Data JPA + MySQL • Academic Project</div></main></body></html>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>RecipeBox - Dashboard</title><link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand brand-link" href="/dashboard">RECIPEBOX<small>PERSONAL RECIPE & MEAL PLANNER</small></a>
+    <nav class="nav">
+        <a class="active" href="/dashboard">Dashboard</a><a href="/recipes">Recipes</a><a href="/favorites">Favorites</a>
+        <a href="/meals">Meal Planner</a><a href="/shopping">Shopping List</a><a href="/users">Users</a>
+    </nav>
+</header>
+
+<main class="container dashboard">
+    <section class="hero hero-rich">
+        <div>
+            <p class="eyebrow">PERSONAL RECIPE & MEAL PLANNER</p>
+            <h1>Everything you need to plan your week.</h1>
+            <p>Save recipes, keep only the food you love in Favorites, and build a clear weekly meal plan.</p>
+            <div class="hero-actions"><a class="btn primary" href="/recipes/new">＋ Add Recipe</a><a class="btn light" href="/meals">＋ Plan a Meal</a></div>
+        </div>
+        <div class="hero-panel"><span>THIS WEEK</span><strong th:text="${#temporals.format(weekStart,'dd MMM') + ' – ' + #temporals.format(weekStart.plusDays(6),'dd MMM yyyy')}">28 Sep – 04 Oct 2026</strong><small th:text="${mealCount} + ' total meal plan entries'">4 total meal plan entries</small></div>
+    </section>
+
+    <section class="cards stat-grid">
+        <div class="card stat stat-blue"><div class="stat-icon">🍴</div><span>Total Recipes</span><strong th:text="${recipeCount}">0</strong><a href="/recipes">Open recipe collection →</a></div>
+        <div class="card stat stat-orange"><div class="stat-icon">★</div><span>Favorite Foods</span><strong th:text="${favoriteCount}">0</strong><a href="/favorites">View favorites only →</a></div>
+        <div class="card stat stat-green"><div class="stat-icon">▣</div><span>Planned Meals</span><strong th:text="${mealCount}">0</strong><a href="/meals">Open weekly planner →</a></div>
+        <div class="card stat stat-purple"><div class="stat-icon">●</div><span>Users</span><strong th:text="${userCount}">0</strong><a href="/users">Manage user details →</a></div>
+    </section>
+
+    <section class="dashboard-grid">
+        <div class="card section-card">
+            <div class="section-title"><div><p class="eyebrow">WEEK AT A GLANCE</p><h2>Meal schedule</h2></div><a class="btn secondary small-btn" href="/meals">Manage plan</a></div>
+            <div class="mini-week">
+                <div class="mini-day" th:each="day : ${weekDays}">
+                    <div class="mini-day-head"><b th:text="${#temporals.format(day,'EEE')}">Mon</b><span th:text="${#temporals.format(day,'dd')}">28</span></div>
+                    <div th:if="${#lists.isEmpty(mealsByDate.get(day))}" class="mini-empty">No meal</div>
+                    <div th:each="m : ${mealsByDate.get(day)}" class="mini-meal">
+                        <span class="meal-type" th:text="${m.mealType}">Lunch</span>
+                        <b th:text="${m.recipe.title}">Chicken Biryani</b>
+                        <small th:if="${m.user != null}" th:text="${'For ' + m.user.name}">For Gokul</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card section-card">
+            <div class="section-title"><div><p class="eyebrow">QUICK START</p><h2>Common actions</h2></div></div>
+            <div class="quick rich-quick">
+                <a href="/recipes/new"><span>＋</span><div><b>Create a recipe</b><small>Add ingredients, steps and prep time.</small></div></a>
+                <a href="/recipes"><span>⌕</span><div><b>Search recipes</b><small>Find food by name, ingredient or cuisine.</small></div></a>
+                <a href="/favorites"><span>★</span><div><b>Favorite foods</b><small>See only recipes you marked as favorite.</small></div></a>
+                <a href="/shopping"><span>✓</span><div><b>Shopping list</b><small>Combine ingredients from planned meals.</small></div></a>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-grid lower-grid">
+        <div class="card section-card">
+            <div class="section-title"><div><p class="eyebrow">YOUR SAVED PICKS</p><h2>Favorite foods</h2></div><a href="/favorites" class="text-link">View all →</a></div>
+            <div th:if="${#lists.isEmpty(favoriteRecipes)}" class="empty compact-empty">No favorite foods yet. Mark a recipe with ★ to see it here.</div>
+            <div class="favorite-list" th:unless="${#lists.isEmpty(favoriteRecipes)}">
+                <div class="favorite-item" th:each="r : ${favoriteRecipes}">
+                    <div class="food-avatar">★</div><div class="food-main"><b th:text="${r.title}">Chicken Biryani</b><span th:text="${(r.cuisine ?: 'General') + ' • ' + (r.prepTime != null ? r.prepTime + ' min' : 'Prep time not set')}">Indian • 45 min</span></div>
+                    <form th:action="@{'/recipes/favorite/' + ${r.id}}" method="post"><button class="icon-action" title="Remove from favorites">★</button></form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card section-card">
+            <div class="section-title"><div><p class="eyebrow">USER DETAILS</p><h2>Users</h2></div><a href="/users" class="text-link">Full management →</a></div>
+            <div th:if="${#lists.isEmpty(users)}" class="empty compact-empty">No users registered yet.</div>
+            <div class="user-mini-list" th:unless="${#lists.isEmpty(users)}">
+                <div class="user-mini" th:each="u : ${users}">
+                    <div class="avatar" th:text="${#strings.substring(u.name,0,1).toUpperCase()}">G</div>
+                    <div class="user-main"><b th:text="${u.name}">Gokul</b><span th:text="${u.email}">email@example.com</span></div>
+                    <form th:action="@{'/users/delete/' + ${u.id}}" method="post" onsubmit="return confirm('Delete this user? Their meal plans will also be removed, while recipe ownership will be cleared.')"><button class="delete-icon" title="Delete user">🗑</button></form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">RecipeBox • Spring Boot + Spring Data JPA + MySQL • User-friendly DBMS project</div>
+</main>
+</body>
+</html>

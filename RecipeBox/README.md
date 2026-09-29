@@ -1,138 +1,77 @@
 # RecipeBox — Personal Recipe and Meal Planner
 
-A high-level Spring Boot + Spring Data JPA + MySQL DBMS project based directly on the supplied academic problem statement.
+A user-friendly Spring Boot + Spring Data JPA + MySQL application for managing recipes, favorite foods, users, weekly meal plans and consolidated shopping lists.
 
-## 1. Problem statement covered
+## Updated features
 
-Home cooks and hostel residents need a central recipe collection and weekly meal planner instead of repeating notes across notebooks and phone apps.
+- Rich, simple dashboard with clear cards and weekly meal overview.
+- Dashboard includes user details and a delete action for every user.
+- Dedicated **Favorites** page that displays **only recipes where `favorite = true`**.
+- Favorite star works from the recipe collection, dashboard and Favorites page.
+- Weekly Meal Planner uses a clear 7-day calendar. Each saved meal shows date, meal type, recipe, cuisine, user and prep time.
+- Meal entries must reference an existing recipe.
+- Duplicate meal slots are blocked, including the previously problematic no-user case.
+- Meal type is validated to Breakfast, Lunch, Dinner or Snack.
+- User deletion removes that user's meal-plan entries and safely leaves their recipes in the database with no owner.
+- Recipe deletion removes dependent meal plans and ingredients safely.
+- Server-side recipe validation prevents invalid title, prep time and servings values.
+- Existing MySQL database name remains `recipebox`; Hibernate uses `ddl-auto=update` so normal application startup does not wipe existing data.
+- REST API now also supports `DELETE /api/users/{id}`.
 
-## 2. Required features implemented
+## Main pages
 
-- Add a recipe with ingredients, preparation steps and prep time.
-- Search recipes by title, ingredient or cuisine.
-- Plan a meal for a date and meal type by linking it to an existing recipe.
-- Generate a consolidated shopping list for the selected week/date range.
-- Mark/unmark recipes as favorites.
-- User management for recipe/meal-plan ownership.
-- Dashboard with recipe, favorite, meal-plan and user counts.
-- REST APIs for recipes, users, favorites and meal plans.
-- Input validation and global REST exception handling.
-- Business rules enforced in the service layer, not only by database constraints.
+- `/dashboard` — rich overview, weekly schedule, favorites preview and user management.
+- `/recipes` — searchable recipe collection.
+- `/favorites` — favorites only.
+- `/meals` — weekly meal planner.
+- `/shopping` — consolidated shopping list.
+- `/users` — add, view and delete users.
 
-## 3. Business rules
+## Database
 
-1. A meal plan can only reference an existing recipe.
-2. Duplicate meal slots for the same date, meal type and user are rejected immediately.
-3. Deleting a recipe removes its dependent meal-plan entries and ingredients safely.
-4. User email is unique.
-5. Recipe title is required; prep time cannot be negative; servings must be at least 1.
-6. Ingredient quantity cannot be negative.
+The included `database.sql` is a **fresh setup/demo script**. It recreates the `recipebox` tables and inserts sample data.
 
-## 4. Architecture
-
-```text
-Browser / Thymeleaf Frontend
-          |
-          v
-Controllers  --->  REST API (/api/*)
-          |
-          v
-Service Layer  <-- Business Rules + Validation
-          |
-          v
-Spring Data JPA Repositories
-          |
-          v
-MySQL Database
-```
-
-The project follows the same layered style as the supplied JARVIS reference project: `controller`, `service`, `repository`, `entity`, `dto`, `exception`, `templates`, `static/css`.
-
-## 5. Folder structure
-
-```text
-RecipeBox/
-├── pom.xml
-├── database.sql
-├── README.md
-├── .gitignore
-└── src/main/
-    ├── java/com/example/recipebox/
-    │   ├── RecipeBoxApplication.java
-    │   ├── controller/
-    │   │   ├── PageController.java
-    │   │   ├── ApiController.java
-    │   │   └── GlobalExceptionHandler.java
-    │   ├── dto/
-    │   │   ├── RecipeRequest.java
-    │   │   ├── IngredientRequest.java
-    │   │   └── MealPlanRequest.java
-    │   ├── entity/
-    │   │   ├── User.java
-    │   │   ├── Recipe.java
-    │   │   ├── Ingredient.java
-    │   │   └── MealPlan.java
-    │   ├── repository/
-    │   │   ├── UserRepository.java
-    │   │   ├── RecipeRepository.java
-    │   │   ├── IngredientRepository.java
-    │   │   └── MealPlanRepository.java
-    │   ├── service/
-    │   │   ├── UserService.java
-    │   │   ├── RecipeService.java
-    │   │   ├── MealPlanService.java
-    │   │   └── ShoppingListService.java
-    │   └── exception/
-    │       ├── ResourceNotFoundException.java
-    │       └── BusinessRuleException.java
-    └── resources/
-        ├── application.properties
-        ├── static/css/style.css
-        └── templates/
-            ├── dashboard.html
-            ├── recipes.html
-            ├── recipe-form.html
-            ├── meal-plan.html
-            ├── shopping.html
-            └── users.html
-```
-
-## 6. Requirements
-
-- Java 17
-- Maven 3.9+
-- MySQL 8.x
-- VS Code / Spring Tool Suite / IntelliJ
-
-## 7. Database setup
-
-Open MySQL Workbench and run `database.sql`.
-
-The script creates the `recipebox` database, four tables, foreign keys, unique constraints and demo records.
-
-If your MySQL password is not `root`, change this line in `src/main/resources/application.properties`:
+If you already have the RecipeBox database and want to keep your existing data, **do not run the DROP TABLE section**. Start the application with:
 
 ```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+The project is already configured this way.
+
+Default connection in `src/main/resources/application.properties`:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/recipebox?useSSL=false&serverTimezone=Asia/Kolkata&allowPublicKeyRetrieval=true
+spring.datasource.username=root
 spring.datasource.password=root
 ```
 
-## 8. Run
+Change only the password if your MySQL password is different.
+
+## Run
+
+Requirements:
+
+- Java 17+
+- Maven 3.9+
+- MySQL 8+
 
 From the folder containing `pom.xml`:
 
 ```powershell
-$env:Path += ";C:\Program Files\apache-maven-3.9.16\bin"
-mvn clean
-mvn spring-boot:run
+mvn clean spring-boot:run
 ```
 
-Open:
+Then open:
 
 ```text
-http://localhost:8080
+http://localhost:8080/dashboard
 ```
 
-## 9. REST endpoints
+If Maven is not available as a command, open the project in IntelliJ IDEA, Spring Tool Suite, or VS Code and run `RecipeBoxApplication.java` after configuring Java 17 and MySQL.
+
+## REST API
 
 ### Recipes
 
@@ -149,6 +88,7 @@ http://localhost:8080
 
 - `GET /api/users`
 - `POST /api/users`
+- `DELETE /api/users/{id}`
 
 ### Meal plans
 
@@ -156,44 +96,10 @@ http://localhost:8080
 - `POST /api/meal-plans`
 - `DELETE /api/meal-plans/{id}`
 
-## 10. Example REST request
+## Important database behavior
 
-```json
-{
-  "title": "Paneer Fried Rice",
-  "cuisine": "Indian-Chinese",
-  "description": "Quick paneer rice",
-  "instructions": "Cook rice, vegetables and paneer together.",
-  "prepTime": 25,
-  "servings": 2,
-  "favorite": false,
-  "userId": 1,
-  "ingredients": [
-    {"name":"Rice","quantity":2,"unit":"cups"},
-    {"name":"Paneer","quantity":150,"unit":"g"}
-  ]
-}
-```
-
-## 11. Project review against the supplied rubric
-
-**Technical implementation (40):** Spring Boot application, REST APIs, CRUD, service-layer business rules, JPA repositories and MySQL integration are included.
-
-**System design & architecture (25):** Entity relationships are modeled as `User -> Recipe -> Ingredient` and `User/Recipe -> MealPlan`; the project uses Controller-Service-Repository layering.
-
-**Code quality & efficiency (20):** DTOs, validation annotations, reusable services, meaningful exception classes and centralized REST error handling are included.
-
-**Presentation & communication (15):** The UI includes a dashboard, recipe collection/search, recipe form, weekly planner, consolidated shopping list and user management so the main workflow can be demonstrated end-to-end.
-
-## 12. Suggested demo sequence
-
-1. Open Dashboard.
-2. Add a User.
-3. Add a Recipe with 3–4 ingredients.
-4. Search the recipe by ingredient/cuisine.
-5. Mark it as Favorite.
-6. Add the recipe to a meal slot.
-7. Add another meal using another recipe.
-8. Open Shopping List and show aggregated quantities.
-9. Use `/api/recipes` in Postman to demonstrate REST CRUD.
-10. Try an invalid/non-existing recipe ID for a meal plan to demonstrate the business-rule error.
+- `recipes.user_id` uses `ON DELETE SET NULL`, so deleting a user does not delete their recipes.
+- `meal_plans.user_id` uses `ON DELETE CASCADE`, and the service also explicitly removes a user's meal plans before deleting the user.
+- `meal_plans.recipe_id` uses `ON DELETE CASCADE`, so deleting a recipe removes meal entries that cannot exist without that recipe.
+- `ingredients.recipe_id` uses `ON DELETE CASCADE`, so deleting a recipe removes its ingredients.
+- Favorite filtering is performed by the repository method `findByFavoriteTrueOrderByTitleAsc()`.

@@ -1,6 +1,10 @@
 -- =========================================================
 -- RecipeBox - MySQL Database Setup
+-- Personal Recipe and Meal Planner
 -- =========================================================
+-- Use this script for a fresh database. Existing data can be
+-- preserved by keeping spring.jpa.hibernate.ddl-auto=update.
+
 CREATE DATABASE IF NOT EXISTS recipebox;
 USE recipebox;
 
@@ -50,7 +54,7 @@ CREATE TABLE meal_plans (
     CONSTRAINT uk_meal_slot UNIQUE (meal_date, meal_type, user_id)
 );
 
--- Demo records for presentation/testing
+-- Demo data
 INSERT INTO users (name,email) VALUES
 ('Gokul','gokul@example.com'),
 ('RecipeBox User','user@example.com');
@@ -71,8 +75,8 @@ INSERT INTO meal_plans (meal_date,meal_type,recipe_id,user_id) VALUES
 (DATE_ADD(CURDATE(),INTERVAL 1 DAY),'Lunch',2,1),
 (DATE_ADD(CURDATE(),INTERVAL 2 DAY),'Dinner',3,1);
 
--- Verification queries
-SELECT * FROM users;
-SELECT * FROM recipes;
-SELECT * FROM ingredients;
-SELECT * FROM meal_plans;
+-- Verification
+SELECT 'USERS' AS section; SELECT * FROM users;
+SELECT 'RECIPES' AS section; SELECT * FROM recipes;
+SELECT 'INGREDIENTS' AS section; SELECT * FROM ingredients;
+SELECT 'MEAL_PLANS' AS section; SELECT * FROM meal_plans;

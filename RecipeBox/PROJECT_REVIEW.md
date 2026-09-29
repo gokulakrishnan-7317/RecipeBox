@@ -1,72 +1,44 @@
-# RecipeBox - Project Review / Viva Checklist
+# RecipeBox — Updated Project Review
 
-## Project title
-RecipeBox — Personal Recipe and Meal Planner
+## Core requirements
 
-## Objective
-Build a backend that stores recipes with ingredients and allows a user to plan a weekly meal calendar and generate a consolidated shopping list.
+| Requirement | Status | Implementation |
+|---|---|---|
+| Add recipes | Complete | Recipe form + RecipeService |
+| Store ingredients | Complete | Ingredient entity with recipe relationship |
+| Search by recipe/ingredient/cuisine | Complete | RecipeRepository search query |
+| Weekly meal planning | Complete | Seven-day planner with stored recipe links |
+| Consolidated shopping list | Complete | ShoppingListService aggregates planned ingredients |
+| Favorites | Complete | Repository filter + dedicated `/favorites` page |
+| User management | Complete | Add/view/delete users |
+| Dashboard | Complete | Rich overview with stats, meals, favorites and users |
+| Validation | Complete | DTO validation + service business rules |
+| REST API | Complete | Recipes, favorites, users and meal plans |
 
-## Rubric mapping
+## Important fixes
 
-### 1. Technical Implementation — 40 marks
-- Spring Boot application with Java 17.
-- Spring Web controllers and REST APIs.
-- Spring Data JPA repositories.
-- MySQL database integration through JDBC.
-- CRUD for Recipe.
-- User and MealPlan persistence.
-- Ingredient persistence through Recipe relationship.
-- Service-layer validation and business rules.
-- HTTP status/error handling for REST requests.
+1. Favorites page no longer displays all recipes; it uses only favorite recipes.
+2. User deletion is available from the dashboard and Users page.
+3. User deletion removes dependent meal-plan entries and keeps recipes by clearing their owner through the database foreign key.
+4. Meal planning is displayed as a seven-day calendar instead of one card per meal without day grouping.
+5. Duplicate meal slots are checked correctly for both selected users and the no-user case.
+6. Meal types are validated against Breakfast, Lunch, Dinner and Snack.
+7. Recipe title, prep time and servings are validated in the service layer.
+8. Database foreign-key actions keep dependent records consistent.
 
-### 2. System Design & Architecture — 25 marks
-- Entity model: User, Recipe, Ingredient, MealPlan.
-- One User can own many Recipes and MealPlans.
-- One Recipe contains many Ingredients.
-- One MealPlan references exactly one existing Recipe.
-- Layered architecture: Controller -> Service -> Repository -> MySQL.
-- DTOs keep REST input separate from entities.
-
-### 3. Code Quality & Efficiency — 20 marks
-- Meaningful package separation.
-- Validation annotations such as @NotBlank, @Email, @Min and @PositiveOrZero.
-- Central GlobalExceptionHandler for REST errors.
-- Search uses a repository query across title, cuisine and ingredient name.
-- Shopping list aggregates quantities by ingredient and unit.
-- Recipe deletion safely removes dependent meal-plan records before deleting the recipe.
-
-### 4. Presentation & Communication — 15 marks
-The frontend provides a clear demonstration flow:
-1. Dashboard
-2. Add User
-3. Add Recipe + ingredients
-4. Search recipe
-5. Favorite recipe
-6. Plan meals
-7. Generate shopping list
-8. Demonstrate REST endpoints in Postman
-9. Demonstrate invalid meal-plan rule
-
-## Database tables
+## Architecture
 
 ```text
-users
-  |
-  +----< recipes ----< ingredients
-  |
-  +----< meal_plans >---- recipes
+Thymeleaf UI
+    |
+PageController / ApiController
+    |
+Service Layer
+    |---- Business rules
+    |---- Validation
+    |---- Delete safety
+    |
+Spring Data JPA Repositories
+    |
+MySQL recipebox database
 ```
-
-## Business rules to explain in viva
-
-**Rule 1:** A meal plan must reference an existing recipe. The service checks the recipe ID before saving.
-
-**Rule 2:** A duplicate meal slot is rejected for the same date, meal type and user.
-
-**Rule 3:** Shopping list quantities are consolidated across all planned recipes in the selected date range.
-
-**Rule 4:** Favorite status is stored in the recipe table and can be toggled from the UI or REST API.
-
-## 2-minute project explanation
-
-“RecipeBox is a Spring Boot and MySQL based personal recipe and meal planning system. The system stores Users, Recipes, Ingredients and Meal Plans using JPA relationships. Users can add recipes with ingredients and preparation steps, search recipes by ingredient or cuisine, mark recipes as favorites and assign recipes to a weekly meal calendar. The service layer validates that every planned meal points to an existing recipe and prevents duplicate meal slots. The shopping-list module reads the planned meals and aggregates ingredient quantities. The frontend is built with Thymeleaf, HTML and CSS, while REST endpoints demonstrate CRUD operations. The application follows Controller, Service and Repository architecture and uses MySQL as the persistent database.”

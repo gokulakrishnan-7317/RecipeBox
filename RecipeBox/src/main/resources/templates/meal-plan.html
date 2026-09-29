@@ -1,1 +1,45 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RecipeBox - Meal Planner</title><link rel="stylesheet" th:href="@{/css/style.css}"></head><body><header class="topbar"><div class="brand">RECIPEBOX<small>PERSONAL RECIPE & MEAL PLANNER</small></div><nav class="nav"><a href="/dashboard">Dashboard</a><a href="/recipes">Recipes</a><a class="active" href="/meals">Meal Planner</a><a href="/shopping">Shopping List</a><a href="/users">Users</a></nav></header><main class="container"><div class="page-head"><div><p class="eyebrow">WEEKLY MEAL CALENDAR</p><h1>Meal Planner</h1><p>Every meal must link to an existing recipe.</p></div></div><div class="card form-card" style="max-width:none;margin-bottom:22px"><form class="grid2" method="post" action="/meals/save"><div class="form-group"><label>Date *</label><input type="date" name="mealDate" required th:value="${weekStart}"></div><div class="form-group"><label>Meal type *</label><select name="mealType" required><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select></div><div class="form-group"><label>Recipe *</label><select name="recipeId" required><option value="">Select existing recipe</option><option th:each="r:${recipes}" th:value="${r.id}" th:text="${r.title + ' — ' + (r.cuisine ?: 'General')}">Recipe</option></select></div><div class="form-group"><label>User</label><select name="userId"><option value="">No owner</option><option th:each="u:${users}" th:value="${u.id}" th:text="${u.name}">User</option></select></div><div class="form-actions" style="grid-column:1/-1"><button class="btn primary" type="submit">+ Add to Meal Plan</button></div></form></div><div class="calendar" th:if="${not #lists.isEmpty(meals)}"><div class="day" th:each="m:${meals}"><h4 th:text="${#temporals.format(m.mealDate,'EEE, dd MMM') + ' • ' + m.mealType}">Mon</h4><div class="meal"><b th:text="${m.recipe.title}">Recipe</b><small th:text="${m.recipe.cuisine}">Cuisine</small><form th:action="@{'/meals/delete/' + ${m.id}}" method="post" style="margin-top:7px"><button class="action danger-text" style="border:0;background:none;padding:0;cursor:pointer">Remove</button></form></div></div></div><div class="card empty" th:if="${#lists.isEmpty(meals)}">No meals planned yet. Use the form above to build your week.</div></main></body></html>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RecipeBox - Meal Planner</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<header class="topbar"><a class="brand brand-link" href="/dashboard">RECIPEBOX<small>PERSONAL RECIPE & MEAL PLANNER</small></a><nav class="nav"><a href="/dashboard">Dashboard</a><a href="/recipes">Recipes</a><a href="/favorites">Favorites</a><a class="active" href="/meals">Meal Planner</a><a href="/shopping">Shopping List</a><a href="/users">Users</a></nav></header>
+<main class="container">
+    <div class="page-head"><div><p class="eyebrow">WEEKLY MEAL CALENDAR</p><h1>Meal Planner</h1><p>Each saved meal clearly shows the date, meal type, recipe and user.</p></div><a class="btn secondary" href="/shopping">Generate shopping list</a></div>
+    <div class="alert" th:if="${error}" th:text="${error}">There was a problem saving the meal.</div>
+    <section class="planner-layout">
+        <div class="card form-card planner-form">
+            <div class="section-title"><div><p class="eyebrow">ADD TO WEEK</p><h2>Plan a meal</h2></div><span class="step-pill">1. Choose → 2. Save</span></div>
+            <form method="post" action="/meals/save">
+                <div class="form-group"><label>Date *</label><input type="date" name="mealDate" required th:value="${weekStart}" th:min="${weekStart}" th:max="${weekStart.plusDays(6)}"><small class="help">Choose a day from the current weekly calendar.</small></div>
+                <div class="form-group"><label>Meal type *</label><select name="mealType" required><option value="Breakfast">🌅 Breakfast</option><option value="Lunch">☀ Lunch</option><option value="Dinner">🌙 Dinner</option><option value="Snack">🍎 Snack</option></select></div>
+                <div class="form-group"><label>Recipe *</label><select name="recipeId" required><option value="">Select an existing recipe</option><option th:each="r:${recipes}" th:value="${r.id}" th:text="${r.title + ' • ' + (r.cuisine ?: 'General') + ' • ' + (r.prepTime != null ? r.prepTime + ' min' : 'time -')}">Recipe</option></select><small class="help">The selected recipe is stored with this meal entry.</small></div>
+                <div class="form-group"><label>User / planner</label><select name="userId"><option value="">No specific user</option><option th:each="u:${users}" th:value="${u.id}" th:text="${u.name + ' • ' + u.email}">User</option></select></div>
+                <button class="btn primary full-btn" type="submit">＋ Save Meal to Calendar</button>
+            </form>
+        </div>
+        <div class="card planner-guide">
+            <p class="eyebrow">HOW IT IS STORED</p><h2>Clear meal records</h2>
+            <div class="guide-row"><span>1</span><div><b>Date</b><small>The exact calendar date is stored.</small></div></div>
+            <div class="guide-row"><span>2</span><div><b>Meal type</b><small>Breakfast, Lunch, Dinner or Snack.</small></div></div>
+            <div class="guide-row"><span>3</span><div><b>Recipe</b><small>A real recipe ID is linked, not free text.</small></div></div>
+            <div class="guide-row"><span>4</span><div><b>User</b><small>Optional owner/planner for the meal.</small></div></div>
+        </div>
+    </section>
+
+    <section class="card calendar-card">
+        <div class="section-title"><div><p class="eyebrow">SAVED MEALS</p><h2 th:text="${'Week of ' + #temporals.format(weekStart,'dd MMM yyyy')}">Week</h2></div><span class="saved-count" th:text="${#lists.size(meals)} + ' saved meal(s)'">4 saved meals</span></div>
+        <div class="calendar-rich">
+            <div class="day-rich" th:each="day : ${weekDays}">
+                <div class="day-rich-head"><div><b th:text="${#temporals.format(day,'EEEE')}">Monday</b><span th:text="${#temporals.format(day,'dd MMM')}">28 Sep</span></div><span class="day-number" th:text="${#temporals.format(day,'dd')}">28</span></div>
+                <div th:if="${#lists.isEmpty(mealsByDate.get(day))}" class="day-empty"><span>＋</span><small>No meal planned</small></div>
+                <div class="meal-card" th:each="m : ${mealsByDate.get(day)}">
+                    <div class="meal-card-head"><span class="meal-type" th:text="${m.mealType}">Lunch</span><form th:action="@{'/meals/delete/' + ${m.id}}" method="post" onsubmit="return confirm('Remove this meal from the plan?')"><button class="remove-small" title="Remove">×</button></form></div>
+                    <h3 th:text="${m.recipe.title}">Chicken Biryani</h3>
+                    <p th:text="${m.recipe.cuisine ?: 'General cuisine'}">Indian</p>
+                    <div class="meal-detail" th:if="${m.user != null}">👤 <span th:text="${m.user.name}">Gokul</span></div>
+                    <div class="meal-detail">⏱ <span th:text="${m.recipe.prepTime != null ? m.recipe.prepTime + ' min prep' : 'Prep time not set'}">45 min prep</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main></body></html>

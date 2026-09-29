@@ -44,6 +44,15 @@ public class RecipeService {
     }
 
     private void apply(Recipe recipe, RecipeRequest request) {
+        if (request.title() == null || request.title().isBlank()) {
+            throw new com.example.recipebox.exception.BusinessRuleException("Recipe title is required.");
+        }
+        if (request.prepTime() != null && request.prepTime() < 0) {
+            throw new com.example.recipebox.exception.BusinessRuleException("Prep time cannot be negative.");
+        }
+        if (request.servings() != null && request.servings() < 1) {
+            throw new com.example.recipebox.exception.BusinessRuleException("Servings must be at least 1.");
+        }
         recipe.setTitle(request.title().trim());
         recipe.setCuisine(blankToNull(request.cuisine()));
         recipe.setDescription(request.description());
